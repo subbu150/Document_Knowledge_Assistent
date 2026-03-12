@@ -1,0 +1,73 @@
+import OpenAI from "openai";
+import dotenv from "dotenv";
+import fs from "fs";
+
+import { generateEmbedding } from "../services/embeddingClient.js";
+import { cosineSimilarity } from "../utils/cosinesimilarity.js";
+
+dotenv.config();
+const client = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1"
+});
+export async function runQuery(question) {
+
+  console.log("\nGenerating query embedding...");
+
+  const queryEmbedding = await generateEmbedding(question);
+
+  console.log("Loading vectors...");
+
+  const vectors = JSON.parse(fs.readFileSync("vectors.json"));
+
+  console.log("Computing similarity...");
+
+  const scored = vectors.map(chunk => {
+    const score = cosineSimilarity(queryEmbedding, chunk.embedding);
+    return {
+      text: chunk.text,
+      score
+    };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  const topChunks = scored.slice(0, 3);
+
+  console.log("\nTop Retrieved Chunks:\n");
+
+  topChunks.forEach((c, i) => {
+    console.log(`Chunk ${i + 1}:`, c.text);
+  });
+
+  const context = topChunks.map(c => c.text).join("\n");
+
+  const prompt = `
+Use the context below to answer the question.
+
+Context:
+${context}
+
+Question:
+${question}
+
+Answer in a clear way.
+`;
+
+  console.log("\nCalling Groq LLM...\n");
+
+  const response = await client.chat.completions.create({
+    model: "openai/gpt-oss-120b",
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  });
+
+  console.log("🧠 Answer:\n");
+
+  return response.choices[0].message.content;
+}
+

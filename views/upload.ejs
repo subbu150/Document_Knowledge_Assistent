@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Upload</title>
+    <style>
+        :root { --primary: #4f46e5; --bg: #f8fafc; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #1e293b; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        p { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+        
+        .upload-area { border: 2px dashed #e2e8f0; padding: 2rem; border-radius: 0.75rem; cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover { border-color: var(--primary); background: #f5f3ff; }
+        
+        input[type="file"] { display: none; }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 1.5rem; transition: opacity 0.2s; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Loading Spinner */
+        #loader { display: none; margin-top: 1rem; color: var(--primary); font-size: 0.85rem; font-weight: 500; }
+        .spinner { width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>📄 Document AI</h1>
+    <p>Upload a PDF or TXT to start chatting.</p>
+
+    <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+        <label for="document" class="upload-area" id="dropZone">
+            <span id="fileName">Click to browse or drag file here</span>
+            <input type="file" name="document" id="document" accept=".pdf,.txt" required onchange="updateFileName()">
+        </label>
+        
+        <button type="submit" class="btn" id="submitBtn">Process Document</button>
+    </form>
+
+    <div id="loader">
+        <div class="spinner"></div> Processing AI Embeddings...
+    </div>
+</div>
+
+<script>
+    function updateFileName() {
+        const input = document.getElementById('document');
+        const label = document.getElementById('fileName');
+        label.innerText = input.files[0] ? input.files[0].name : "Click to browse or drag file here";
+    }
+
+    document.getElementById('uploadForm').onsubmit = function() {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loader').style.display = 'block';
+    };
+</script>
+
+</body>
+</html>
