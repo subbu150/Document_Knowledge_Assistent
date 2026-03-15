@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@qdrant/js-client-rest": "^1.17.0",
     "dotenv": "^17.3.1",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
@@ -19,6 +20,7 @@
     "multer": "^2.1.1",
     "openai": "^6.27.0",
     "openapi": "^1.0.0",
-    "pdf-parse": "^2.4.5"
+    "pdf-parse": "^2.4.5",
+    "uuid": "^13.0.0"
   }
 }

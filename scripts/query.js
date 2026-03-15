@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import fs from "fs";
-
+import { QdrantClient } from "@qdrant/js-client-rest";
 import { generateEmbedding } from "../services/embeddingClient.js";
 import { cosineSimilarity } from "../utils/cosinesimilarity.js";
 
@@ -10,26 +10,29 @@ const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1"
 });
+const qclient = new QdrantClient({
+  url: "http://127.0.0.1:6333" ,
+   checkCompatibility: false // Change from localhost to this
+});
 export async function runQuery(question) {
 
   console.log("\nGenerating query embedding...");
 
   const queryEmbedding = await generateEmbedding(question);
+  console.log("Searching Qdrant for similar vectors...");
+  const searchResponse = await qclient.search("documents", {
+        vector: queryEmbedding,
+        limit: 5, 
+        with_payload: true, 
+        with_vector: false, 
+      });
+  const scored = searchResponse.map(point => ({
+        text: point.payload.text, 
+        score: point.score,
+        document: point.payload.document
+      }));
 
-  console.log("Loading vectors...");
-
-  const vectors = JSON.parse(fs.readFileSync("vectors.json"));
-
-  console.log("Computing similarity...");
-
-  const scored = vectors.map(chunk => {
-    const score = cosineSimilarity(queryEmbedding, chunk.embedding);
-    return {
-      text: chunk.text,
-      score
-    };
-  });
-
+  console.log("Top result:", scored[0].text);
   scored.sort((a, b) => b.score - a.score);
 
   const topChunks = scored.slice(0, 3);
