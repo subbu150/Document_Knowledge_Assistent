@@ -32,16 +32,16 @@ export async function runQuery(question) {
         document: point.payload.document
       }));
 
-  console.log("Top result:", scored[0].text);
+
   scored.sort((a, b) => b.score - a.score);
 
   const topChunks = scored.slice(0, 3);
 
-  console.log("\nTop Retrieved Chunks:\n");
 
-  topChunks.forEach((c, i) => {
-    console.log(`Chunk ${i + 1}:`, c.text);
-  });
+
+  // topChunks.forEach((c, i) => {
+  //   console.log(`Chunk ${i + 1}:`, c.text);
+  // });
 
   const context = topChunks.map(c => c.text).join("\n");
 

@@ -12,6 +12,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { marked } from 'marked';
 const app = express();
+import { jobs } from "./jobs/jobStore.js";
+import { v4 as uuidv4 } from "uuid";
+const jobId = uuidv4();
 
 // Middleware & View Engine
 app.set("view engine", "ejs");
@@ -43,7 +46,18 @@ app.get("/", (req, res) => {
 
 app.post("/upload", upload.single("document"), async (req, res) => {
   const file = req.file;
+  const jobid=uuidv4();
+   jobs.push({
+    id:jobid,
+    filePath: req.file.path,
+    status: "PENDING",
+    result: null,
+    error: null
+  });
 
+  console.log("In upload Routes Job Assaigned to Job Route")
+  console.log(jobs);
+  console.log("Done")
   if (!file) {
     return res.status(400).send("No file uploaded.");
   }
@@ -60,10 +74,10 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     }
 
     console.log("✅ Extraction Successful");
-    console.log(sessionExtractedText)
+   
     // Optionally delete file after reading to save space
     fs.unlinkSync(file.path); 
-    await processDocument(sessionExtractedText)
+    await processDocument(jobid,sessionExtractedText)
     res.render('query', { textPreview: sessionExtractedText.substring(0, 200) });
 
   } catch (error) {
@@ -71,7 +85,7 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     res.status(500).send("Error processing file");
   }
 });
-// Change this:
+
 app.get("/ask", (req, res) => {
     // We render the view, not redirect to a script
     res.render("query", { textPreview: "Ready to answer questions..." });
@@ -97,5 +111,18 @@ app.post("/ask", async (req, res) => {
     `);
 });
 
+app.get("/:id", (req, res) => {
+  const job = jobs.find(j => j.id === req.params.id);
+
+  if (!job) {
+    return res.status(404).json({ message: "Job not found" });
+  }
+
+  res.json({
+    status: job.status,
+    result: job.result,
+    error: job.error
+  });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

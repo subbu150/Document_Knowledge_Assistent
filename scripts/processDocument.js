@@ -4,6 +4,7 @@ import { generateEmbedding } from "../services/embeddingClient.js";
 import { processWithLimit } from "../services/Concurrency.js";
 import { retryWithBackoff } from "../services/retry.js";
 import { v4 as uuidv4 } from "uuid";
+import { jobs } from "../jobs/jobStore.js";
 
 const client = new QdrantClient({
   url: "http://127.0.0.1:6333" ,
@@ -24,7 +25,7 @@ async function initializeCollection() {
   }
 }
 
-export async function processDocument(text, fileName = "source.pdf") {
+export async function processDocument(text,jobid, fileName = "source.pdf") {
   await initializeCollection();
 
   const MAX_CHARS = 100000; 
@@ -66,7 +67,8 @@ export async function processDocument(text, fileName = "source.pdf") {
     wait: true,
     points 
   });
-
+  const job = jobs.find(j => j.id === jobid);
+if (job) job.status = "COMPLETED";
   console.log("PROCESS COMPLETE");
   const pts = await client.scroll("documents", {
   limit: 5,
