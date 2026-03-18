@@ -1,55 +1,102 @@
-# Document Knowledge Assistant (RAG System)
+# 🚀 Document Knowledge Assistant (RAG System)
 
-## Overview
+## 📌 Overview
 
-The Document Knowledge Assistant is a Retrieval-Augmented Generation (RAG) system designed to help users query government documents such as policy guidelines, scheme descriptions, and administrative circulars.
+The **Document Knowledge Assistant** is a production-style **Retrieval-Augmented Generation (RAG)** system that enables users to interact with documents such as:
 
-The system allows users to upload documents, process them into embeddings, and ask questions that are answered using information retrieved from those documents.
+* Government policies
+* Scheme guidelines
+* Administrative documents
 
-This project demonstrates a complete RAG pipeline implemented in Node.js.
+Users can upload documents, which are processed asynchronously into embeddings, stored in a vector database, and queried using natural language.
 
----
-
-## Features
-
-* Upload PDF or text documents
-* Extract document text automatically
-* Split documents into smaller chunks
-* Generate embeddings for semantic search
-* Store embeddings locally in a vector file
-* Retrieve relevant document sections
-* Generate answers using an LLM
-* Simple web interface using EJS
+This project demonstrates a **complete AI backend pipeline with job processing, vector search, and LLM integration**.
 
 ---
 
-## System Architecture
+# ✨ Features
 
+### 📄 Document Ingestion
+
+* Upload PDF and text documents
+* Automatic text extraction (PDF parsing)
+* Chunking with overlap strategy
+
+### ⚡ Async Processing (Production Pattern)
+
+* Background job system
+* Job status tracking (PENDING → PROCESSING → COMPLETED)
+* Non-blocking API design
+
+### 🧠 RAG Pipeline
+
+* Embedding generation using API
+* Vector storage using Qdrant
+* Semantic similarity search
+* Context-aware answer generation
+
+### 💬 Query System
+
+* Ask questions based on uploaded document
+* Context injection into LLM prompt
+* Clean formatted answers (Markdown support)
+
+### 🌐 UI
+
+* Simple EJS-based interface
+* Upload → Processing → Query flow
+
+---
+
+# 🏗 System Architecture
+
+```
 User
 ↓
 Frontend (EJS)
 ↓
 Express Backend
 ↓
-Document Processing Pipeline
+Upload API → Job Created
 ↓
-Chunking + Embedding Generation
+Job Queue (In-Memory)
 ↓
-Vector Storage (JSON)
+Worker Process
 ↓
-Retriever (Cosine Similarity)
+Text Extraction (PDF / TXT)
 ↓
-LLM Answer Generation
+Chunking + Embeddings
+↓
+Vector DB (Qdrant)
+↓
+Retriever (Similarity Search + Filtering)
+↓
+LLM (Groq / OpenAI Compatible)
+↓
+Answer to User
+```
 
 ---
 
-## Project Structure
+# 📁 Project Structure
 
 ```
 project-root
 │
+├── routes/
+│   ├── upload.js
+│   ├── job.js
+│   └── query.js
+│
+├── workers/
+│   └── jobWorker.js
+│
+├── jobs/
+│   └── jobStore.js
+│
 ├── scripts/
-│   └── processDocument.js
+│   ├── processDocument.js
+│   └── query.js
 │
 ├── services/
 │   ├── embeddingClient.js
@@ -61,53 +108,45 @@ project-root
 │
 ├── views/
 │   ├── upload.ejs
+│   ├── processing.ejs
 │   └── query.ejs
 │
 ├── uploads/
 │
-├── vectors.json
 ├── server.js
 └── package.json
 ```
 
 ---
 
-## Installation
+# ⚙️ Installation
 
-Clone the repository:
-
-```
+```bash
 git clone https://github.com/subbul150/Document_Knowledge_Assistent.git
 cd Document_Knowledge_Assistent
-```
-
-Install dependencies:
-
-```
 npm install
 ```
 
 ---
 
-## Environment Variables
+# 🔐 Environment Variables
 
 Create a `.env` file:
 
 ```
-API_KEY=your_api_key_here
+GROQ_API_KEY=your_api_key
+GEMINI_API_KEY=your_embedding_key
 ```
 
 ---
 
-## Running the Project
+# ▶️ Running the Project
 
-Start the server:
-
-```
+```bash
 node server.js
 ```
 
-Open the browser:
+Open:
 
 ```
 http://localhost:3000
@@ -115,56 +154,101 @@ http://localhost:3000
 
 ---
 
-## Workflow
+# 🔄 Workflow (End-to-End)
 
-1. Upload a PDF or text document
-2. The document text is extracted
-3. The text is split into chunks
-4. Embeddings are generated for each chunk
-5. Embeddings are stored in `vectors.json`
-6. User asks a question
-7. Relevant chunks are retrieved
-8. The LLM generates an answer based on retrieved context
+### 1️⃣ Upload Document
+
+* User uploads PDF/TXT
+* Job is created
+
+### 2️⃣ Background Processing
+
+* Worker extracts text
+* Splits into chunks
+* Generates embeddings
+* Stores in Qdrant
+
+### 3️⃣ Query Phase
+
+* User asks question
+* Query embedding generated
+* Relevant chunks retrieved (filtered by document)
+* LLM generates answer
 
 ---
 
-## Example Queries
+# 🧠 RAG Pipeline (Core Logic)
+
+```
+User Question
+↓
+Embedding
+↓
+Vector Search (Top-K)
+↓
+Filter by documentId
+↓
+Retrieve chunks
+↓
+Build context
+↓
+LLM response
+```
+
+---
+
+# 💡 Example Queries
 
 * What is the eligibility for PM Kisan scheme?
-* What documents are required for PMAY housing scheme?
-* What is the refund policy mentioned in the document?
+* What are the benefits of the policy?
+* Explain the Keynesian theory mentioned in the document.
 
 ---
 
-## Technologies Used
+# 🛠 Technologies Used
 
 * Node.js
 * Express.js
 * EJS
+* Qdrant (Vector Database)
 * pdf-parse
-* Embedding API
-* Cosine similarity retrieval
+* Groq LLM (OpenAI-compatible API)
+* Google Generative AI (Embeddings)
 
 ---
 
-## Limitations
+# ⚠️ Limitations
 
-* Uses JSON instead of a vector database
-* Limited document size for ingestion
-* No authentication or user management
-* Not optimized for large-scale deployments
-
----
-
-## Future Improvements
-
-* Use a vector database (pgvector / Qdrant)
-* Add document metadata filtering
-* Improve chunking strategy
-* Deploy using Docker and cloud infrastructure
+* In-memory job queue (not persistent)
+* No authentication / user sessions
+* Limited scalability (single-node)
+* Basic error handling
 
 ---
 
-## Author
-Subash Reddy Balupunuri 
-Mini project built as part of the AI Backend Engineering learning path.
+# 🚀 Future Improvements
+
+* Redis + BullMQ for job queue
+* Persistent database (PostgreSQL / MongoDB)
+* Cloud storage (AWS S3)
+* Multi-user session handling
+* Advanced retrieval (Hybrid search, reranking)
+* Deployment with Docker + Cloud
+
+---
+
+# 🎯 Key Learnings
+
+* Designing RAG systems end-to-end
+* Async backend architecture (jobs + workers)
+* Vector search & embedding pipelines
+* Prompt engineering for answer quality
+* Debugging real-world AI failures
+
+---
+
+# 👨‍💻 Author
+
+**Subash Reddy Balupunuri**
+
+Mini project built as part of the **AI Backend Engineering (Project Payan)** learning path.

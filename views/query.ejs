@@ -16,15 +16,14 @@
 <body>
     <div class="chat-container">
         <h2>Document Chatbot 🤖</h2>
-        <div class="preview">
-            <strong>Document Preview:</strong> <%= textPreview %>...
-        </div>
+        
         
         <div id="chat-history">
             </div>
 
         <form action="/ask" method="POST">
             <div class="input-group">
+                <input type="hidden" name="jobId" value="<%= jobId %>" />
                 <input type="text" name="query" placeholder="Ask a question about the PDF..." required>
                 <button type="submit">Send</button>
             </div>
